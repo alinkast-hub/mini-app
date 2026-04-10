@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Task, Session, TimerSettings, TimerMode, User, StatsData } from '@/types';
 import * as db from '@/lib/db';
+
+const SETTINGS_KEY = 'app_settings';
 
 // ── Default settings ───────────────────────────────────────────────────────
 const DEFAULT_SETTINGS: TimerSettings = {
@@ -21,6 +24,7 @@ interface AppState {
 
   // Settings
   settings: TimerSettings;
+  loadSettings: () => Promise<void>;
   updateSettings: (partial: Partial<TimerSettings>) => void;
 
   // Tasks
@@ -57,8 +61,26 @@ export const useStore = create<AppState>((set, get) => ({
 
   // ── Settings ──────────────────────────────────────────────────────────
   settings: DEFAULT_SETTINGS,
-  updateSettings: (partial) =>
-    set((state) => ({ settings: { ...state.settings, ...partial } })),
+  loadSettings: async () => {
+    try {
+      const raw = await AsyncStorage.getItem(SETTINGS_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<TimerSettings>;
+        set((state) => ({ settings: { ...state.settings, ...saved } }));
+      }
+    } catch (e) {
+      console.error('Failed to load settings:', e);
+    }
+  },
+  updateSettings: (partial) => {
+    set((state) => {
+      const next = { ...state.settings, ...partial };
+      AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(next)).catch((e) => {
+        console.error('Failed to persist settings:', e);
+      });
+      return { settings: next };
+    });
+  },
 
   // ── Tasks ─────────────────────────────────────────────────────────────
   tasks: [],

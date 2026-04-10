@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useStore } from '@/lib/store';
 import { scheduleSessionEndNotification } from '@/lib/notifications';
 import { TimerMode, Session } from '@/types';
@@ -52,6 +53,7 @@ export default function DashboardScreen() {
   const handleSessionEnd = useCallback(async () => {
     clearTimer();
     setStatus('idle');
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
 
     if (timerMode === 'work') {
       const session: Session = {
@@ -106,12 +108,14 @@ export default function DashboardScreen() {
   const pauseTimer = () => {
     clearTimer();
     setStatus('paused');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
   const resetTimer = () => {
     clearTimer();
     setSecondsLeft(getDuration(timerMode));
     setStatus('idle');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
   const skipSession = () => {
@@ -120,6 +124,7 @@ export default function DashboardScreen() {
     const next: TimerMode =
       timerMode === 'work' ? 'shortBreak' : 'work';
     setTimerMode(next);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
   };
 
   const formatTime = (secs: number) => {
@@ -201,7 +206,14 @@ export default function DashboardScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => status === 'running' ? pauseTimer() : startTimer()}
+          onPress={() => {
+            if (status === 'running') {
+              pauseTimer();
+            } else {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+              startTimer();
+            }
+          }}
           style={{
             width: 70,
             height: 70,

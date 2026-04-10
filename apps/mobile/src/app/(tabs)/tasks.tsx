@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { randomUUID } from 'expo-crypto';
 import { useStore } from '@/lib/store';
 import { Task, Priority } from '@/types';
@@ -47,6 +48,15 @@ function TaskFormModal({
   const [priority, setPriority] = useState<Priority>(initialTask?.priority ?? 'medium');
   const [dueDate, setDueDate] = useState(initialTask?.dueDate ?? '');
 
+  // Reset form state whenever the task being edited changes
+  useEffect(() => {
+    setTitle(initialTask?.title ?? '');
+    setNotes(initialTask?.notes ?? '');
+    setTags(initialTask?.tags.join(', ') ?? '');
+    setPriority(initialTask?.priority ?? 'medium');
+    setDueDate(initialTask?.dueDate ?? '');
+  }, [initialTask]);
+
   const bg = isDark ? '#1e1e2e' : '#f8f8ff';
   const card = isDark ? '#27273a' : '#ffffff';
   const textPrimary = isDark ? '#e4e4f7' : '#1e1e2e';
@@ -55,6 +65,7 @@ function TaskFormModal({
 
   const handleSave = async () => {
     if (!title.trim()) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Validation', 'Title is required');
       return;
     }
@@ -92,6 +103,7 @@ function TaskFormModal({
       };
       await addTask(task);
     }
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onClose();
   };
 
@@ -251,13 +263,23 @@ export default function TasksScreen() {
   };
 
   const toggleComplete = async (task: Task) => {
+    await Haptics.impactAsync(
+      task.completed ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium,
+    );
     await editTask({ ...task, completed: !task.completed, updatedAt: new Date().toISOString() });
   };
 
   const confirmDelete = (task: Task) => {
     Alert.alert('Delete Task', `Delete "${task.title}"?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => removeTask(task.id) },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+          removeTask(task.id);
+        },
+      },
     ]);
   };
 
