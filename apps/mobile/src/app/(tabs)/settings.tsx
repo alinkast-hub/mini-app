@@ -93,7 +93,7 @@ export default function SettingsScreen() {
   const googleClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
   const discovery = AuthSession.useAutoDiscovery('https://accounts.google.com');
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+  const [request, , promptAsync] = AuthSession.useAuthRequest(
     {
       clientId: googleClientId,
       scopes: ['openid', 'profile', 'email'],

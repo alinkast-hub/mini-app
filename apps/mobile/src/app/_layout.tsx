@@ -12,14 +12,13 @@ import '../global.css';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { loadTasks, loadSessions, setUser } = useStore();
+  const { loadTasks, loadSessions, loadSettings, setUser } = useStore();
 
   useEffect(() => {
     async function init() {
       try {
         await initDB();
-        await loadTasks();
-        await loadSessions();
+        await Promise.all([loadTasks(), loadSessions(), loadSettings()]);
         await requestNotificationPermission();
 
         // Restore persisted auth
