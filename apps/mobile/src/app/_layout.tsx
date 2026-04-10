@@ -7,7 +7,7 @@ import { useStore } from '@/lib/store';
 import { requestNotificationPermission } from '@/lib/notifications';
 import { getStoredUser, getJWT } from '@/lib/secureStorage';
 import { User } from '@/types';
-import '../global.css';
+import './global.css';
 
 SplashScreen.preventAutoHideAsync();
 
