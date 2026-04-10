@@ -1,0 +1,4 @@
+/* global.css – imported by root layout to activate NativeWind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
