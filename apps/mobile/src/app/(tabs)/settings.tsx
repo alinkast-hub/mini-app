@@ -98,6 +98,7 @@ export default function SettingsScreen() {
       clientId: googleClientId,
       scopes: ['openid', 'profile', 'email'],
       redirectUri: AuthSession.makeRedirectUri({ scheme: 'miniapp' }),
+      responseType: AuthSession.ResponseType.IdToken,
     },
     discovery,
   );
@@ -110,6 +111,10 @@ export default function SettingsScreen() {
     const result = await promptAsync();
     if (result.type === 'success') {
       const idToken = result.params.id_token;
+      if (!idToken) {
+        Alert.alert('Sign-in failed', 'No ID token received from Google');
+        return;
+      }
       try {
         const { accessToken, user: me } = await api.googleSignIn(idToken);
         await storeJWT(accessToken);
