@@ -15,7 +15,7 @@ export class SessionsService {
 
   finish(id: string, userId: string) {
     return this.prisma.session.update({
-      where: { id },
+      where: { id, userId },
       data: { completedAt: new Date() },
     });
   }
