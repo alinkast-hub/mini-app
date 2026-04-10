@@ -43,7 +43,9 @@ export class SessionsService {
 
     // Streak calculation
     const days = new Set(
-      allSessions.map((s) => s.completedAt.toISOString().split('T')[0]),
+      allSessions
+        .filter((s) => s.completedAt != null)
+        .map((s) => s.completedAt.toISOString().split('T')[0]),
     );
     let streak = 0;
     const check = new Date(now);
